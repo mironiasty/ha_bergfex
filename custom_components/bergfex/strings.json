@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select Country",
+        "description": "Please select the country of the ski area.",
+        "data": {
+          "country": "Country"
+        }
+      },
+      "ski_area": {
+        "title": "Select Bergfex Ski Area",
+        "description": "Please select the ski area you want to monitor in {country}.",
+        "data": {
+          "ski_area": "Ski Area"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Bergfex. Please check your internet connection.",
+      "no_areas_found": "Could not find any ski areas for the selected country."
+    },
+    "abort": {
+      "already_configured": "This ski area is already configured."
+    }
+  }
+}

@@ -1,0 +1,32 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "*" # Triggers on any tag push
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Create zip archive for HACS
+        run: |
+          cd custom_components
+          zip -r ../bergfex.zip bergfex
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Version ${{ env.VERSION }}"
+          tag_name: ${{ github.ref }}
+          draft: true # Creates a draft release you can edit before publishing
+          generate_release_notes: true
+          files: bergfex.zip
