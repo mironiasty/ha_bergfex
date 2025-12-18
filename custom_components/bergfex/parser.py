@@ -332,53 +332,64 @@ def parse_resort_page(html: str, area_path: str | None = None) -> dict[str, Any]
             except ValueError:
                 _LOGGER.debug("Could not parse lifts: %s", lifts_text)
 
-    # Slopes - find all dd elements after "Offene Pisten" dt
+    # Slopes - parse all dd elements after "Offene Pisten" dt until next dt
     slopes_dt = soup.find("dt", string=lambda t: t and "Offene Pisten" in t)
     if slopes_dt:
-        # The first dd after "Offene Pisten" contains km info
-        dd_km = slopes_dt.find_next_sibling("dd", class_="big")
-        if dd_km:
-            km_text = dd_km.text.strip()
-            # Extract numbers like "46 km von 64 km" or "7,6 km von 20,1 km"
-            if "von" in km_text:
-                parts = km_text.replace("km", "").replace(",", ".").split("von")
-                if len(parts) == 2:
-                    try:
-                        open_val = float(parts[0].strip())
-                        total_val = float(parts[1].strip())
-                        area_data["slopes_open_km"] = (
-                            int(open_val) if open_val.is_integer() else open_val
-                        )
-                        area_data["slopes_total_km"] = (
-                            int(total_val) if total_val.is_integer() else total_val
-                        )
-                    except ValueError:
-                        _LOGGER.debug("Could not parse slope km: %s", km_text)
-            elif "km" in km_text:
-                # Handle case where only open slopes are reported e.g. "12,5 km"
-                parts = km_text.replace("km", "").replace(",", ".").strip()
-                try:
-                    open_val = float(parts)
-                    area_data["slopes_open_km"] = (
-                        int(open_val) if open_val.is_integer() else open_val
-                    )
-                except ValueError:
-                    _LOGGER.debug("Could not parse single slope km: %s", km_text)
-
-        # The next dd contains count info
-        if dd_km:
-            dd_count = dd_km.find_next_sibling("dd", class_="big")
-            if dd_count:
-                count_text = dd_count.text.strip()
-                # Extract numbers like "19 von 29"
-                if "von" in count_text:
-                    parts = count_text.split("von")
-                    if len(parts) == 2:
+        # Iterate over next siblings
+        curr = slopes_dt.next_sibling
+        while curr:
+            if curr.name == "dt":
+                # Reached next section
+                break
+            if curr.name == "dd" and "big" in curr.get("class", []):
+                text = curr.text.strip()
+                if "km" in text:
+                    # Parse as KM
+                    # Extract numbers like "46 km von 64 km" or "12.5 km"
+                    if "von" in text:
+                        parts = text.replace("km", "").replace(",", ".").split("von")
+                        if len(parts) == 2:
+                            try:
+                                open_val = float(parts[0].strip())
+                                total_val = float(parts[1].strip())
+                                area_data["slopes_open_km"] = (
+                                    int(open_val) if open_val.is_integer() else open_val
+                                )
+                                area_data["slopes_total_km"] = (
+                                    int(total_val)
+                                    if total_val.is_integer()
+                                    else total_val
+                                )
+                            except ValueError:
+                                _LOGGER.debug("Could not parse slope km: %s", text)
+                    else:
+                        # Handle case where only open slopes are reported e.g. "12,5 km"
+                        part = text.replace("km", "").replace(",", ".").strip()
                         try:
-                            area_data["slopes_open_count"] = int(parts[0].strip())
-                            area_data["slopes_total_count"] = int(parts[1].strip())
+                            open_val = float(part)
+                            area_data["slopes_open_km"] = (
+                                int(open_val) if open_val.is_integer() else open_val
+                            )
                         except ValueError:
-                            _LOGGER.debug("Could not parse slope count: %s", count_text)
+                            _LOGGER.debug("Could not parse single slope km: %s", text)
+                else:
+                    # Parse as Count (no "km" in text)
+                    # Extract numbers like "19 von 29"
+                    if "von" in text:
+                        parts = text.split("von")
+                        if len(parts) == 2:
+                            try:
+                                area_data["slopes_open_count"] = int(parts[0].strip())
+                                area_data["slopes_total_count"] = int(parts[1].strip())
+                            except ValueError:
+                                _LOGGER.debug("Could not parse slope count: %s", text)
+                    elif text.isdigit():
+                        try:
+                            area_data["slopes_open_count"] = int(text)
+                        except ValueError:
+                            pass
+
+            curr = curr.next_sibling
 
     # Slope condition (Pistenzustand)
     slope_condition = get_text_from_dd(soup, "Pistenzustand")
