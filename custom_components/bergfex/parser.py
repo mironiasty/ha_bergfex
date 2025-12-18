@@ -276,6 +276,22 @@ def parse_resort_page(html: str, area_path: str | None = None) -> dict[str, Any]
                     _LOGGER.debug(
                         "Could not parse valley elevation: %s", elevation_text
                     )
+        elif "Schneehöhe" in dt_text:
+            # Fallback for resorts that don't satisfy "Tal" but have "Schneehöhe" (often higher altitude)
+            if "snow_valley" not in area_data:
+                if dd := dt.find_next_sibling("dd", class_="big"):
+                    area_data["snow_valley"] = dd.text.strip().replace("cm", "").strip()
+                # Extract elevation from text like "Schneehöhe 1.850m"
+                match = re.search(r"(\d+(?:\.\d+)*)m", dt_text)
+                if match:
+                    elevation_clean = match.group(1).replace(".", "")
+                    try:
+                        area_data["elevation_valley"] = int(elevation_clean)
+                    except ValueError:
+                        _LOGGER.debug(
+                            "Could not parse fallback valley elevation: %s",
+                            match.group(1),
+                        )
 
     # Last update
     h2_sub = soup.find("div", class_="h2-sub")
@@ -323,15 +339,31 @@ def parse_resort_page(html: str, area_path: str | None = None) -> dict[str, Any]
         dd_km = slopes_dt.find_next_sibling("dd", class_="big")
         if dd_km:
             km_text = dd_km.text.strip()
-            # Extract numbers like "46 km von 64 km"
+            # Extract numbers like "46 km von 64 km" or "7,6 km von 20,1 km"
             if "von" in km_text:
-                parts = km_text.replace("km", "").split("von")
+                parts = km_text.replace("km", "").replace(",", ".").split("von")
                 if len(parts) == 2:
                     try:
-                        area_data["slopes_open_km"] = int(parts[0].strip())
-                        area_data["slopes_total_km"] = int(parts[1].strip())
+                        open_val = float(parts[0].strip())
+                        total_val = float(parts[1].strip())
+                        area_data["slopes_open_km"] = (
+                            int(open_val) if open_val.is_integer() else open_val
+                        )
+                        area_data["slopes_total_km"] = (
+                            int(total_val) if total_val.is_integer() else total_val
+                        )
                     except ValueError:
                         _LOGGER.debug("Could not parse slope km: %s", km_text)
+            elif "km" in km_text:
+                # Handle case where only open slopes are reported e.g. "12,5 km"
+                parts = km_text.replace("km", "").replace(",", ".").strip()
+                try:
+                    open_val = float(parts)
+                    area_data["slopes_open_km"] = (
+                        int(open_val) if open_val.is_integer() else open_val
+                    )
+                except ValueError:
+                    _LOGGER.debug("Could not parse single slope km: %s", km_text)
 
         # The next dd contains count info
         if dd_km:
@@ -352,13 +384,6 @@ def parse_resort_page(html: str, area_path: str | None = None) -> dict[str, Any]
     slope_condition = get_text_from_dd(soup, "Pistenzustand")
     if slope_condition:
         area_data["slope_condition"] = slope_condition
-
-    # New snow
-    new_snow_div = soup.find("div", class_="heading heading-ne desktop-only")
-    if new_snow_div and (h1_div := new_snow_div.find("div", class_="h1")):
-        area_data["new_snow"] = (
-            h1_div.find("span").text.strip().replace("cm", "").strip()
-        )
 
     # Status
     if area_data.get("lifts_open_count", 0) > 0:

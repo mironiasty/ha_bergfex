@@ -62,7 +62,7 @@ For each configured ski area, the following sensors will be created:
 | **Avalanche Warning** | Current avalanche warning level.              | `2 - mäßig`           |
 | **Lifts Open**        | The number of currently open lifts.           | `14`                  |
 | **Lifts Total**       | The total number of lifts in the resort.      | `26`                  |
-| **Slopes Open (km)**  | Kilometers of open slopes.                    | `45`                  |
+| **Slopes Open (km)**  | Kilometers of open slopes.                    | `45.5`                |
 | **Slopes Total (km)** | Total kilometers of slopes.                   | `60`                  |
 | **Slopes Open**       | Number of open slopes.                        | `20`                  |
 | **Slopes Total**      | Total number of slopes.                       | `30`                  |

@@ -246,8 +246,13 @@ class BergfexSensor(SensorEntity):
             if isinstance(value, datetime):
                 return value
             # Try to convert to integer if it's a number
-            if isinstance(value, str) and value.isdigit():
-                return int(value)
+            if isinstance(value, str):
+                if value.isdigit():
+                    return int(value)
+                try:
+                    return float(value)
+                except ValueError:
+                    pass
             return value
 
         _LOGGER.debug(

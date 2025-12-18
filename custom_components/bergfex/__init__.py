@@ -58,6 +58,43 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     html = await response.text()
                 parsed_data = parse_resort_page(html, area_path)
 
+                # Fetch "New Snow" from region overview (more accurate than detail page)
+                region_path_from_data = parsed_data.get("region_path", "").strip("/")
+                if region_path_from_data:
+                    try:
+                        # Construct URL for region snow report (e.g. /tirol/schneewerte/)
+                        snow_report_url = urljoin(
+                            BASE_URL, f"/{region_path_from_data}/schneewerte/"
+                        )
+                        _LOGGER.debug(
+                            "Fetching region snow report from: %s", snow_report_url
+                        )
+                        async with session.get(
+                            snow_report_url, allow_redirects=True
+                        ) as response:
+                            if response.status == 200:
+                                overview_html = await response.text()
+                                overview_data = parse_overview_data(overview_html)
+                                # The keys in overview_data are full paths e.g. /skimountaineering/tirol/hintertux/
+                                # area_path is e.g. /hintertux/
+                                # We need to find the matching entry
+                                for key, data in overview_data.items():
+                                    if area_path.strip("/") in key:
+                                        if "new_snow" in data:
+                                            parsed_data["new_snow"] = data["new_snow"]
+                                            _LOGGER.debug(
+                                                "Updated new_snow from overview: %s",
+                                                parsed_data["new_snow"],
+                                            )
+                                        break
+                            else:
+                                _LOGGER.warning(
+                                    "Could not fetch region snow report: %s",
+                                    response.status,
+                                )
+                    except Exception as err:
+                        _LOGGER.warning("Error fetching region snow report: %s", err)
+
                 # Fetch snow forecast images (pages 0-5)
                 for i in range(6):
                     try:
