@@ -371,9 +371,7 @@ def parse_resort_page(
     if avalanche_warning:
         # Remove common service names if present
         cleaned = (
-            avalanche_warning.replace("Lawinenwarndienst", "")
-            .replace("Avalanche Warning Service", "")
-            .strip()
+            avalanche_warning.split("\n")[0].strip()
         )
         area_data["avalanche_warning"] = _translate_value(cleaned, lang)
     # Lifts & Slopes parsing
