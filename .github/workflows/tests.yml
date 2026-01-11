@@ -23,6 +23,10 @@ jobs:
           pip install homeassistant pytest-homeassistant-custom-component
           pip install beautifulsoup4 lxml pytest pytest-asyncio
           
-      - name: Run tests
+      - name: Run alpine tests
         run: |
           PYTHONPATH=. pytest custom_components/bergfex/tests/test_parser.py
+
+      - name: Run cross country tests
+        run: |
+          PYTHONPATH=. pytest custom_components/bergfex/tests/test_cross_country.py
