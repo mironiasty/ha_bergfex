@@ -56,7 +56,7 @@ def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
     yesterday_kw = keywords.get("yesterday", "gestern").lower()
 
     # Handle "Heute" / "Today"
-    if date_str.lower().startswith(today_kw):
+    if today_kw in date_str.lower():
         time_match = re.search(r"(\d{1,2}):(\d{2})", date_str)
         if time_match:
             hour = int(time_match.group(1))
@@ -64,7 +64,7 @@ def parse_bergfex_datetime(date_str: str, lang: str = "at") -> datetime | None:
             return now.replace(hour=hour, minute=minute, second=0, microsecond=0)
 
     # Handle "Gestern" / "Yesterday"
-    elif date_str.lower().startswith(yesterday_kw):
+    elif yesterday_kw in date_str.lower():
         time_match = re.search(r"(\d{1,2}):(\d{2})", date_str)
         if time_match:
             hour = int(time_match.group(1))
@@ -485,6 +485,144 @@ def parse_resort_page(
 
     # Status
     if area_data.get("lifts_open_count", 0) > 0:
+        area_data["status"] = "Open"
+    else:
+        area_data["status"] = "Closed"
+
+    return {k: v for k, v in area_data.items() if v not in ("-", "")}
+
+
+def parse_cross_country_resort_page(html: str, lang: str = "at") -> dict[str, Any]:
+    """Parse the HTML of a single cross country skiing page."""
+    soup = BeautifulSoup(html, "lxml")
+    area_data = {}
+
+    keywords = KEYWORDS.get(lang, KEYWORDS["at"])
+
+    # Resort Name
+    h1_tag = soup.find("h1")
+    if h1_tag:
+        area_data["resort_name"] = " ".join(
+            h1_tag.get_text(separator=" ").split()
+        ).strip()
+
+    # Report Time
+    last_update_text = get_text_from_dd(
+        soup, keywords.get("trail_report", "Loipenbericht")
+    )
+    if last_update_text:
+        last_update_dt = parse_bergfex_datetime(last_update_text, lang)
+        if last_update_dt:
+            area_data["last_update"] = last_update_dt
+
+    # If not found, try searching for the string in headers (fallback)
+    if "last_update" not in area_data:
+        report_tag = soup.find(
+            string=re.compile(keywords.get("trail_report", "Loipenbericht"), re.I)
+        )
+        if report_tag:
+            parent = report_tag.find_parent(["h1", "h2", "h3", "dt"])
+            if parent:
+                sibling = parent.find_next_sibling(["div", "p", "dd"])
+                if sibling:
+                    last_update_dt = parse_bergfex_datetime(sibling.text.strip(), lang)
+                    if last_update_dt:
+                        area_data["last_update"] = last_update_dt
+
+    # If not found, try h2-sub
+    if "last_update" not in area_data:
+        h2_sub = soup.find("div", class_="h2-sub")
+        if h2_sub:
+            last_update_dt = parse_bergfex_datetime(h2_sub.text.strip(), lang)
+            if last_update_dt:
+                area_data["last_update"] = last_update_dt
+
+    # Operation Status (Betrieb)
+    operation = get_text_from_dd(soup, keywords.get("operation", "Betrieb"))
+    if operation:
+        area_data["operation_status"] = _translate_value(operation, lang)
+
+    # Classical Trails
+    classical_kw = keywords.get("classical", "klassisch")
+    for dt in soup.find_all(["dt", "div"], class_=["big", "report-label"]):
+        if classical_kw.lower() in dt.get_text().lower():
+            if dt.name == "dt":
+                if dd := dt.find_next_sibling("dd", class_="big"):
+                    text = dd.text.strip()
+                    if "km" in text:
+                        match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
+                        if match:
+                            area_data["classical_distance_km"] = float(
+                                match.group(1).replace(",", ".")
+                            )
+
+                    # Get condition from spans or next dd
+                    condition_parts = []
+                    for span in dd.find_all("span", class_="default-size"):
+                        condition_parts.append(span.text.strip())
+
+                    if condition_parts:
+                        area_data["classical_condition"] = _translate_value(
+                            " ".join(condition_parts), lang
+                        )
+                    else:
+                        if next_dd := dd.find_next_sibling("dd"):
+                            area_data["classical_condition"] = _translate_value(
+                                next_dd.text.strip(), lang
+                            )
+            else:  # div.report-label
+                if report_info := dt.find_parent("div", class_="report-info"):
+                    if val_div := report_info.find("div", class_="report-value"):
+                        text = val_div.text.strip()
+                        match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
+                        if match:
+                            area_data["classical_distance_km"] = float(
+                                match.group(1).replace(",", ".")
+                            )
+
+    # Skating Trails
+    skating_kw = keywords.get("skating", "Skating")
+    for dt in soup.find_all(["dt", "div"], class_=["big", "report-label"]):
+        if skating_kw.lower() in dt.get_text().lower():
+            if dt.name == "dt":
+                if dd := dt.find_next_sibling("dd", class_="big"):
+                    text = dd.text.strip()
+                    if "km" in text:
+                        match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
+                        if match:
+                            area_data["skating_distance_km"] = float(
+                                match.group(1).replace(",", ".")
+                            )
+
+                    # Get condition from spans or next dd
+                    condition_parts = []
+                    for span in dd.find_all("span", class_="default-size"):
+                        condition_parts.append(span.text.strip())
+
+                    if condition_parts:
+                        area_data["skating_condition"] = _translate_value(
+                            " ".join(condition_parts), lang
+                        )
+                    else:
+                        if next_dd := dd.find_next_sibling("dd"):
+                            area_data["skating_condition"] = _translate_value(
+                                next_dd.text.strip(), lang
+                            )
+            else:  # div.report-label
+                if report_info := dt.find_parent("div", class_="report-info"):
+                    if val_div := report_info.find("div", class_="report-value"):
+                        text = val_div.text.strip()
+                        match = re.search(r"(\d+(?:[\.,]\d+)?)", text)
+                        if match:
+                            area_data["skating_distance_km"] = float(
+                                match.group(1).replace(",", ".")
+                            )
+
+    # Status
+    if (
+        area_data.get("classical_distance_km", 0) > 0
+        or area_data.get("skating_distance_km", 0) > 0
+    ):
         area_data["status"] = "Open"
     else:
         area_data["status"] = "Closed"

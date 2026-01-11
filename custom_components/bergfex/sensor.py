@@ -21,9 +21,12 @@ from .const import (
     CONF_DOMAIN,
     CONF_LANGUAGE,
     CONF_SKI_AREA,
+    CONF_TYPE,
     COORDINATORS,
     COUNTRIES,
     DOMAIN,
+    TYPE_ALPINE,
+    TYPE_CROSS_COUNTRY,
 )
 from .parser import parse_overview_data, parse_resort_page
 
@@ -45,119 +48,175 @@ async def async_setup_entry(
         entry.runtime_data,
     )
 
-    sensors = [
-        BergfexSensor(coordinator, entry, "Status", "status", icon="mdi:ski"),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Snow Valley",
-            "snow_valley",
-            icon="mdi:snowflake",
-            unit="cm",
-            state_class=SensorStateClass.MEASUREMENT,
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Snow Mountain",
-            "snow_mountain",
-            icon="mdi:snowflake",
-            unit="cm",
-            state_class=SensorStateClass.MEASUREMENT,
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "New Snow",
-            "new_snow",
-            icon="mdi:weather-snowy-heavy",
-            unit="cm",
-            state_class=SensorStateClass.MEASUREMENT,
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Snow Condition",
-            "snow_condition",
-            icon="mdi:snowflake-alert",
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Last Snowfall",
-            "last_snowfall",
-            icon="mdi:calendar-clock",
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Avalanche Warning",
-            "avalanche_warning",
-            icon="mdi:alert-octagon",
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Lifts Open",
-            "lifts_open_count",
-            icon="mdi:gondola",
-            state_class=SensorStateClass.MEASUREMENT,
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Lifts Total",
-            "lifts_total_count",
-            icon="mdi:map-marker-distance",
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Slopes Open (km)",
-            "slopes_open_km",
-            icon="mdi:ski",
-            unit="km",
-            state_class=SensorStateClass.MEASUREMENT,
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Slopes Total (km)",
-            "slopes_total_km",
-            icon="mdi:ski",
-            unit="km",
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Slopes Open",
-            "slopes_open_count",
-            icon="mdi:ski",
-            state_class=SensorStateClass.MEASUREMENT,
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Slopes Total",
-            "slopes_total_count",
-            icon="mdi:ski",
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Slope Condition",
-            "slope_condition",
-            icon="mdi:snowflake-variant",
-        ),
-        BergfexSensor(
-            coordinator,
-            entry,
-            "Last Update",
-            "last_update",
-            icon="mdi:clock-outline",
-            device_class=SensorDeviceClass.TIMESTAMP,
-        ),
-    ]
+    resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
+
+    if resort_type == TYPE_CROSS_COUNTRY:
+        sensors = [
+            BergfexSensor(
+                coordinator, entry, "Status", "status", icon="mdi:ski-cross-country"
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Operation Status",
+                "operation_status",
+                icon="mdi:check-circle-outline",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Classical Trails",
+                "classical_distance_km",
+                icon="mdi:ski-cross-country",
+                unit="km",
+                state_class=SensorStateClass.MEASUREMENT,
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Classical Condition",
+                "classical_condition",
+                icon="mdi:snowflake-variant",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Skating Trails",
+                "skating_distance_km",
+                icon="mdi:ski-cross-country",
+                unit="km",
+                state_class=SensorStateClass.MEASUREMENT,
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Skating Condition",
+                "skating_condition",
+                icon="mdi:snowflake-variant",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Last Update",
+                "last_update",
+                icon="mdi:clock-outline",
+                device_class=SensorDeviceClass.TIMESTAMP,
+            ),
+        ]
+    else:
+        sensors = [
+            BergfexSensor(coordinator, entry, "Status", "status", icon="mdi:ski"),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Snow Valley",
+                "snow_valley",
+                icon="mdi:snowflake",
+                unit="cm",
+                state_class=SensorStateClass.MEASUREMENT,
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Snow Mountain",
+                "snow_mountain",
+                icon="mdi:snowflake",
+                unit="cm",
+                state_class=SensorStateClass.MEASUREMENT,
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "New Snow",
+                "new_snow",
+                icon="mdi:weather-snowy-heavy",
+                unit="cm",
+                state_class=SensorStateClass.MEASUREMENT,
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Snow Condition",
+                "snow_condition",
+                icon="mdi:snowflake-alert",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Last Snowfall",
+                "last_snowfall",
+                icon="mdi:calendar-clock",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Avalanche Warning",
+                "avalanche_warning",
+                icon="mdi:alert-octagon",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Lifts Open",
+                "lifts_open_count",
+                icon="mdi:gondola",
+                state_class=SensorStateClass.MEASUREMENT,
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Lifts Total",
+                "lifts_total_count",
+                icon="mdi:map-marker-distance",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Slopes Open (km)",
+                "slopes_open_km",
+                icon="mdi:ski",
+                unit="km",
+                state_class=SensorStateClass.MEASUREMENT,
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Slopes Total (km)",
+                "slopes_total_km",
+                icon="mdi:ski",
+                unit="km",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Slopes Open",
+                "slopes_open_count",
+                icon="mdi:ski",
+                state_class=SensorStateClass.MEASUREMENT,
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Slopes Total",
+                "slopes_total_count",
+                icon="mdi:ski",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Slope Condition",
+                "slope_condition",
+                icon="mdi:snowflake-variant",
+            ),
+            BergfexSensor(
+                coordinator,
+                entry,
+                "Last Update",
+                "last_update",
+                icon="mdi:clock-outline",
+                device_class=SensorDeviceClass.TIMESTAMP,
+            ),
+        ]
 
     async_add_entities(sensors)
 
@@ -181,6 +240,7 @@ class BergfexSensor(SensorEntity):
     ):
         """Initialize the sensor."""
         self.coordinator = coordinator
+        self._resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
         self._initial_area_name = entry.data["name"]  # Store initial name as fallback
         self._area_name = self._initial_area_name  # Current name, can be updated
         self._area_path = entry.data[CONF_SKI_AREA]
@@ -302,7 +362,11 @@ class BergfexSensor(SensorEntity):
             "identifiers": {(DOMAIN, self._area_path)},
             "name": self._area_name,
             "manufacturer": "Bergfex",
-            "model": "Ski Resort",
+            "model": (
+                "Cross country skiing"
+                if self._resort_type == TYPE_CROSS_COUNTRY
+                else "Ski Resort"
+            ),
             "configuration_url": self._config_url,
         }
 

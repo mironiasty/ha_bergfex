@@ -14,7 +14,14 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from urllib.parse import urljoin
 from homeassistant.util import dt as dt_util
 
-from .const import BASE_URL, CONF_DOMAIN, CONF_SKI_AREA, DOMAIN
+from .const import (
+    BASE_URL,
+    CONF_DOMAIN,
+    CONF_SKI_AREA,
+    CONF_TYPE,
+    DOMAIN,
+    TYPE_CROSS_COUNTRY,
+)
 
 # ... (rest of imports)
 
@@ -80,6 +87,7 @@ class BergfexImage(ImageEntity):
         """Initialize the image entity."""
         super().__init__(coordinator.hass)
         self.coordinator = coordinator
+        self._resort_type = entry.data.get(CONF_TYPE)
         self._initial_area_name = entry.data["name"]
         self._area_name = self._initial_area_name
         self._area_path = entry.data[CONF_SKI_AREA]
@@ -101,7 +109,11 @@ class BergfexImage(ImageEntity):
             "identifiers": {(DOMAIN, self._area_path)},
             "name": self._area_name,
             "manufacturer": "Bergfex",
-            "model": "Ski Resort",
+            "model": (
+                "Cross country skiing"
+                if self._resort_type == TYPE_CROSS_COUNTRY
+                else "Ski Resort"
+            ),
             "configuration_url": self._config_url,
         }
 

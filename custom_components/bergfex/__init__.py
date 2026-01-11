@@ -19,11 +19,19 @@ from .const import (
     CONF_DOMAIN,
     CONF_LANGUAGE,
     CONF_SKI_AREA,
+    CONF_TYPE,
     COORDINATORS,
     COUNTRIES,
     DOMAIN,
+    TYPE_ALPINE,
+    TYPE_CROSS_COUNTRY,
 )
-from .parser import parse_overview_data, parse_resort_page, parse_snow_forecast_images
+from .parser import (
+    parse_cross_country_resort_page,
+    parse_overview_data,
+    parse_resort_page,
+    parse_snow_forecast_images,
+)
 
 PLATFORMS = ["sensor", "image"]
 SCAN_INTERVAL = timedelta(minutes=30)
@@ -41,6 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     area_path = entry.data[CONF_SKI_AREA]
     domain = entry.data.get(CONF_DOMAIN, BASE_URL)
     lang = entry.data.get(CONF_LANGUAGE, "at")
+    resort_type = entry.data.get(CONF_TYPE, TYPE_ALPINE)
 
     # Always create a resort-specific coordinator to get detail page data
     resort_coordinator_name = f"bergfex_{area_name}"
@@ -56,10 +65,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             """Fetch and parse data for a single ski area from detail page."""
             try:
                 url = urljoin(domain, area_path)
+
+                # For cross-country skiing, ensure we fetch the detailed trail report page
+                if resort_type == TYPE_CROSS_COUNTRY:
+                    if not url.rstrip("/").endswith("/loipen"):
+                        # If the URL ends with a slash, appending "loipen/" works fine with urljoin if we are careful
+                        # But urljoin replaces the last component if it doesn't end in slash.
+                        # It is safer to modify the path before urljoin or append carefully.
+                        fetch_path = area_path
+                        if not fetch_path.endswith("/"):
+                            fetch_path += "/"
+                        url = urljoin(domain, f"{fetch_path}loipen/")
+
                 _LOGGER.debug("Fetching resort data from: %s", url)
                 async with session.get(url, allow_redirects=True) as response:
                     response.raise_for_status()
                     html = await response.text()
+
+                if resort_type == TYPE_CROSS_COUNTRY:
+                    parsed_data = parse_cross_country_resort_page(html, lang)
+                    _LOGGER.debug(
+                        "Parsed cross country data for %s: %s", area_path, parsed_data
+                    )
+                    return {area_path: parsed_data}
+
                 parsed_data = parse_resort_page(html, area_path, lang)
 
                 # Fetch "New Snow" from region overview (more accurate than detail page)
