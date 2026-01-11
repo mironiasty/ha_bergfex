@@ -337,7 +337,7 @@ KEYWORDS = {
     },
     "dk": {
         "mountain": "Bjerg",
-        "valley": "Dal",
+        "valley": "Tal",
         "snow_depth": "Snerapport",
         "snow_condition": "Sneforhold",
         "last_snowfall": "Seneste snefald Region",
