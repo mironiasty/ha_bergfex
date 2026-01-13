@@ -8,29 +8,60 @@
           "language": "Sprache"
         }
       },
+      "type": {
+        "title": "Berichtstyp auswählen",
+        "description": "Bitte wählen Sie den Typ des Berichts aus, den Sie überwachen möchten.",
+        "data": {
+          "type": "Berichtstyp"
+        }
+      },
       "country": {
         "title": "Land auswählen",
-        "description": "Bitte wählen Sie das Land des Skigebiets aus.",
+        "description": "Bitte wählen Sie das Land aus, in dem sich das Gebiet befindet.",
         "data": {
           "country": "Land"
         }
       },
-      "ski_area": {
-        "title": "Bergfex Skigebiet auswählen",
-        "description": "Bitte wählen Sie das Skigebiet aus, das Sie in {country} überwachen möchten. Alternativ können Sie den URL-Pfad für ein Skigebiet eingeben, das nicht in der Liste gefunden wurde.",
+      "ski_area_list": {
+        "title": "Bergfex Gebiet auswählen",
+        "description": "Bitte wählen Sie das {report_type} aus, das Sie in {country} überwachen möchten. Alternativ können Sie den URL-Pfad für ein Gebiet eingeben, das nicht in der Liste gefunden wurde.",
         "data": {
-          "ski_area": "Skigebiet",
-          "manual_path": "Manueller URL-Pfad (z.B. lelex-crozet)"
+          "ski_area": "Gebiet",
+          "manual_path": "Manueller URL-Pfad (z.B. serfaus-fiss-ladis)"
+        }
+      },
+      "ski_area_list_alpine": {
+        "title": "Bergfex Skigebiet auswählen",
+        "description": "Bitte wählen Sie das Skigebiet aus, das Sie in {country} überwachen möchten ([Link zur Übersicht]({url})). Alternativ können Sie den URL-Pfad für ein Gebiet eingeben, das nicht in der Liste gefunden wurde.",
+        "data": {
+          "ski_area": "Gebiet",
+          "manual_path": "Manueller URL-Pfad (z.B. serfaus-fiss-ladis)"
+        }
+      },
+      "ski_area_list_cross_country": {
+        "title": "Bergfex Langlaufgebiet auswählen",
+        "description": "Bitte wählen Sie das Langlaufgebiet aus, das Sie in {country} überwachen möchten ([Link zur Übersicht]({url})). Alternativ können Sie den URL-Pfad für ein Gebiet eingeben, das nicht in der Liste gefunden wurde.",
+        "data": {
+          "ski_area": "Gebiet",
+          "manual_path": "Manueller URL-Pfad (z.B. serfaus-fiss-ladis)"
         }
       }
     },
     "error": {
       "cannot_connect": "Verbindung zu Bergfex fehlgeschlagen. Bitte überprüfen Sie Ihre Internetverbindung.",
-      "no_areas_found": "Es wurden keine Skigebiete für das ausgewählte Land gefunden.",
+      "no_areas_found": "Keine Skigebiete für das ausgewählte Land gefunden. Möglicherweise sind aktuell keine Schneeberichte verfügbar.",
       "no_selection": "Bitte wählen Sie ein Skigebiet aus der Liste oder geben Sie einen manuellen Pfad an."
     },
     "abort": {
       "already_configured": "Dieses Skigebiet ist bereits konfiguriert."
+    }
+  },
+  "selector": {
+    "report_type": {
+      "options": {
+        "alpine": "Skigebiet",
+        "cross_country": "Langlaufen"
+      }
     }
   }
 }
