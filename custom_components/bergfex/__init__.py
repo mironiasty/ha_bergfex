@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 from urllib.parse import urljoin
 
 from homeassistant.config_entries import ConfigEntry
@@ -229,9 +229,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     except Exception as err:
                         _LOGGER.warning("Error fetching region snow report: %s", err)
 
+                # Send data to Webhook
                 if webhook_url:
                     try: 
-                        json_data = {k: v for k, v in parsed_data.items() if k not in ("last_update")}
+                        # copy parsed_data and remove keys that are not string
+                        json_data = {k: v for k, v in parsed_data.items() if k not in ("last_update")} 
+                        if parsed_data["last_update"] is not None:
+                            json_data["last_update"] = parsed_data["last_update"].strftime("%c")
+                        json_data["data_sync_time"] = datetime.now().strftime("%c") 
                         async with session.post(webhook_url, 
                                                 json={"merge_variables": json_data}
                                                 ) as response:
