@@ -35,7 +35,8 @@
         "description": "Wybierz ośrodek narciarski który chcesz monitorować w {country}. Alternatywnie możesz wpisać ścieżkę URL do strony dla ośrodka który nie figuruje na liście.",
         "data": {
           "ski_area": "Ośrodek",
-          "manual_path": "Ręczna ścieżka URL (np. lelex-crozet)"
+          "manual_path": "Ręczna ścieżka URL (np. lelex-crozet)",
+          "webhook_url": "Adres dla Webhook (m.in. integracja z TRMNL)"
         }
       },
       "ski_area_list_cross_country": {
