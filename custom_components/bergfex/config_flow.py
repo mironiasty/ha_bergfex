@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import selector
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
@@ -17,10 +18,14 @@ from .const import (
     CONF_LANGUAGE,
     CONF_SKI_AREA,
     CONF_WEBHOOK_URL,
+    CONF_TYPE,
     COUNTRIES,
+    COUNTRIES_CROSS_COUNTRY,
     DOMAIN,
     KEYWORDS,
     SUPPORTED_LANGUAGES,
+    TYPE_ALPINE,
+    TYPE_CROSS_COUNTRY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,10 +42,12 @@ async def get_ski_areas(
             response.raise_for_status()
             html = await response.text()
         soup = BeautifulSoup(html, "html.parser")
-        table = soup.find("table", class_="snow")
+        table = soup.find("table", class_="snow") or soup.find(
+            "table", class_="status-table"
+        )
         if not table:
             _LOGGER.error(
-                "Could not find ski area table with class 'snow' on overview page."
+                "Could not find ski area table with class 'snow' or 'status-table' on overview page."
             )
             return {}
 
@@ -74,7 +81,7 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._data[CONF_DOMAIN] = SUPPORTED_LANGUAGES[user_input[CONF_LANGUAGE]][
                 "domain"
             ]
-            return await self.async_step_country()
+            return await self.async_step_type()
 
         language_options = {
             code: lang["name"] for code, lang in SUPPORTED_LANGUAGES.items()
@@ -86,6 +93,31 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=language_schema,
+        )
+
+    async def async_step_type(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle the type selection step."""
+        if user_input is not None:
+            self._data[CONF_TYPE] = user_input[CONF_TYPE]
+            return await self.async_step_country()
+
+        return self.async_show_form(
+            step_id="type",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_TYPE, default=TYPE_ALPINE
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=[TYPE_ALPINE, TYPE_CROSS_COUNTRY],
+                            mode=selector.SelectSelectorMode.LIST,
+                            translation_key="report_type",
+                        )
+                    )
+                }
+            ),
         )
 
     async def async_step_country(
@@ -123,10 +155,46 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_ski_area_list(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the ski area selection step (list)."""
+        """Handle the ski area selection step (list) - router."""
+        if self._data.get(CONF_TYPE) == TYPE_CROSS_COUNTRY:
+            return await self.async_step_ski_area_list_cross_country(user_input)
+        return await self.async_step_ski_area_list_alpine(user_input)
+
+    async def async_step_ski_area_list_alpine(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle alpine ski area selection."""
+        return await self._async_step_ski_area_list_logic(
+            user_input, step_id="ski_area_list_alpine"
+        )
+
+    async def async_step_ski_area_list_cross_country(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Handle cross country ski area selection."""
+        return await self._async_step_ski_area_list_logic(
+            user_input, step_id="ski_area_list_cross_country"
+        )
+
+    async def _async_step_ski_area_list_logic(
+        self, user_input: dict[str, Any] | None = None, step_id: str = "ski_area_list"
+    ) -> FlowResult:
+        """Handle the ski area selection step (list) logic."""
         errors = {}
         country_name = self._data[CONF_COUNTRY]
-        country_path = COUNTRIES[country_name]
+
+        # Get localized country name for display
+        lang = self._data.get(CONF_LANGUAGE, "at")
+        keywords = KEYWORDS.get(lang, KEYWORDS["at"])
+        translated_countries = keywords.get("countries", {})
+        display_country_name = translated_countries.get(country_name, country_name)
+
+        is_cross_country = self._data.get(CONF_TYPE) == TYPE_CROSS_COUNTRY
+        country_path = (
+            COUNTRIES_CROSS_COUNTRY[country_name]
+            if is_cross_country
+            else COUNTRIES[country_name]
+        )
         domain = self._data[CONF_DOMAIN]
         ski_areas = await get_ski_areas(self.hass, country_path, domain)
 
@@ -158,16 +226,21 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_LANGUAGE: self._data[CONF_LANGUAGE],
                         CONF_DOMAIN: domain,
                         CONF_WEBHOOK_URL: webhook_url,
+                        CONF_TYPE: self._data.get(CONF_TYPE, TYPE_ALPINE),
                         "name": ski_area_name,  # Human-readable
                         "url": f"{domain}{ski_area_path}",
                     },
                 )
 
         if not ski_areas:
-            errors["base"] = "config.error.no_areas_found"
+            errors["base"] = "no_areas_found"
             return self.async_show_form(
-                step_id="ski_area_list",
+                step_id=step_id,
                 errors=errors,
+                description_placeholders={
+                    "country": display_country_name,
+                    "url": f"{domain}{country_path}",
+                },
             )
 
         data_schema = vol.Schema(
@@ -179,8 +252,11 @@ class BergfexConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         return self.async_show_form(
-            step_id="ski_area_list",
+            step_id=step_id,
             data_schema=data_schema,
             errors=errors,
-            description_placeholders={"country": country_name},
+            description_placeholders={
+                "country": display_country_name,
+                "url": f"{domain}{country_path}",
+            },
         )

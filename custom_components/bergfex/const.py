@@ -3,6 +3,9 @@ CONF_SKI_AREA = "ski_area"
 CONF_COUNTRY = "country"
 CONF_LANGUAGE = "language"
 CONF_DOMAIN = "domain"
+CONF_TYPE = "type"
+TYPE_ALPINE = "alpine"
+TYPE_CROSS_COUNTRY = "cross_country"
 COORDINATORS = "coordinators"
 BASE_URL = "https://www.bergfex.at"
 CONF_WEBHOOK_URL = "webhook_url"
@@ -15,10 +18,22 @@ COUNTRIES = {
     "Schweiz": "/schweiz/schneewerte/",
     "Italien": "/italien/schneewerte/",
     "Frankreich": "/frankreich/schneewerte/",
-    "Slowenien": "/slowenien/schneewerte/",
-    "Tschechien": "/tschechien/schneewerte/",
-    "Polen": "/polen/schneewerte/",
-    "Slowakei": "/slowakei/schneewerte/",
+    "Slowenien": "/slovenia/schneewerte/",
+    "Tschechien": "/czechia/schneewerte/",
+    "Polen": "/polska/schneewerte/",
+    "Slowakei": "/slovakia/schneewerte/",
+}
+
+COUNTRIES_CROSS_COUNTRY = {
+    "Österreich": "/oesterreich/langlaufen/loipenberichte/",
+    "Deutschland": "/deutschland/langlaufen/loipenberichte/",
+    "Schweiz": "/schweiz/langlaufen/loipenberichte/",
+    "Italien": "/italien/langlaufen/loipenberichte/",
+    "Frankreich": "/frankreich/langlaufen/loipenberichte/",
+    "Slowenien": "/slovenia/langlaufen/loipenberichte/",
+    "Tschechien": "/czechia/langlaufen/loipenberichte/",
+    "Polen": "/polska/langlaufen/loipenberichte/",
+    "Slowakei": "/slovakia/langlaufen/loipenberichte/",
 }
 
 SUPPORTED_LANGUAGES = {
@@ -57,6 +72,11 @@ KEYWORDS = {
         "today": "heute",
         "yesterday": "gestern",
         "from": "von",
+        "operation": "Betrieb",
+        "classical": "klassisch",
+        "skating": "Skating",
+        "condition": "Zustand",
+        "trail_report": "Loipenbericht",
         "countries": {
             "Österreich": "Österreich",
             "Deutschland": "Deutschland",
@@ -96,6 +116,11 @@ KEYWORDS = {
         "today": "today",
         "yesterday": "yesterday",
         "from": "of",
+        "operation": "Operation",
+        "classical": "classical",
+        "skating": "Skating",
+        "condition": "Condition",
+        "trail_report": "Cross-country skiing report",
         "countries": {
             "Österreich": "Austria",
             "Deutschland": "Germany",
@@ -124,6 +149,11 @@ KEYWORDS = {
         "today": "aujourd'hui",
         "yesterday": "hier",
         "from": "de",
+        "operation": "Heures d'ouverture",
+        "classical": "classique",
+        "skating": "Skating",
+        "condition": "Condition",
+        "trail_report": "Rapport des pistes de ski de fond",
         "countries": {
             "Österreich": "Autriche",
             "Deutschland": "Allemagne",
@@ -154,6 +184,11 @@ KEYWORDS = {
         "today": "oggi",
         "yesterday": "ieri",
         "from": "da",
+        "operation": "Orario",
+        "classical": "classico",
+        "skating": "Skating",
+        "condition": "Condizione",
+        "trail_report": "Rapporto per lo sci di fondo",
         "countries": {
             "Österreich": "Austria",
             "Deutschland": "Germania",
@@ -182,6 +217,11 @@ KEYWORDS = {
         "today": "hoy",
         "yesterday": "ayer",
         "from": "desde",
+        "operation": "Oficina",
+        "classical": "clásico",
+        "skating": "Patinaje",
+        "condition": "Condición",
+        "trail_report": "Informe de las pistas de esquí de fondo",
         "countries": {
             "Österreich": "Austria",
             "Deutschland": "Alemania",
@@ -210,6 +250,11 @@ KEYWORDS = {
         "today": "vandaag",
         "yesterday": "gisteren",
         "from": "van",
+        "operation": "Dienst",
+        "classical": "klassiek",
+        "skating": "Schaatsen",
+        "condition": "Conditie",
+        "trail_report": "Loipenbericht",
         "countries": {
             "Österreich": "Oostenrijk",
             "Deutschland": "Duitsland",
@@ -238,6 +283,11 @@ KEYWORDS = {
         "today": "idag",
         "yesterday": "igår",
         "from": "från",
+        "operation": "Drift",
+        "classical": "klassisk",
+        "skating": "Skridskoåkning",
+        "condition": "Skick",
+        "trail_report": "Rapport om leden",
         "countries": {
             "Österreich": "Österrike",
             "Deutschland": "Tyskland",
@@ -266,6 +316,11 @@ KEYWORDS = {
         "today": "i dag",
         "yesterday": "i går",
         "from": "av",
+        "operation": "Yrke",
+        "classical": "klassisk",
+        "skating": "Skøyting",
+        "condition": "Forhold",
+        "trail_report": "Løyperapport",
         "countries": {
             "Österreich": "Østerrike",
             "Deutschland": "Tyskland",
@@ -294,6 +349,11 @@ KEYWORDS = {
         "today": "i dag",
         "yesterday": "i går",
         "from": "von",
+        "operation": "Betjening",
+        "classical": "klassisk",
+        "skating": "Skøjteløb",
+        "condition": "Tilstand",
+        "trail_report": "Loipenbericht",
         "countries": {
             "Österreich": "Østrig",
             "Deutschland": "Tyskland",
@@ -322,6 +382,11 @@ KEYWORDS = {
         "today": "tänään",
         "yesterday": "eilen",
         "from": "pois",
+        "operation": "Toiminta",
+        "classical": "perinteinen",
+        "skating": "Luistelu",
+        "condition": "Kunto",
+        "trail_report": "Latutilanne",
         "countries": {
             "Österreich": "Itävalta",
             "Deutschland": "Saksa",
@@ -350,6 +415,11 @@ KEYWORDS = {
         "today": "dnes",
         "yesterday": "včera",
         "from": "von",
+        "operation": "Operace",
+        "classical": "classic",
+        "skating": "Bruslení",
+        "condition": "Stav",
+        "trail_report": "Loipenbericht",
         "countries": {
             "Österreich": "Rakousko",
             "Deutschland": "Německo",
@@ -378,6 +448,11 @@ KEYWORDS = {
         "today": "dnes",
         "yesterday": "včera",
         "from": "z",
+        "operation": "Prevádzka",
+        "classical": "klasické",
+        "skating": "Korčuľovanie",
+        "condition": "Stav",
+        "trail_report": "Správa o bežeckých tratiach",
         "countries": {
             "Österreich": "Rakúsko",
             "Deutschland": "Nemecko",
@@ -406,6 +481,11 @@ KEYWORDS = {
         "today": "dzisiaj",
         "yesterday": "wczoraj",
         "from": "z",
+        "operation": "Godziny pracy w sezonie",
+        "classical": "klasycznie",
+        "skating": "Skating",
+        "condition": "Warunki",
+        "trail_report": "Raport o trasach dla narciarzy biegowych",
         "countries": {
             "Österreich": "Austria",
             "Deutschland": "Niemcy",
@@ -434,6 +514,11 @@ KEYWORDS = {
         "today": "danas",
         "yesterday": "jučer",
         "from": "od",
+        "operation": "Pogon",
+        "classical": "klasično",
+        "skating": "Skating",
+        "condition": "Stanje",
+        "trail_report": "Izvještaj o stazama",
         "countries": {
             "Österreich": "Austrija",
             "Deutschland": "Njemačka",
@@ -462,6 +547,11 @@ KEYWORDS = {
         "today": "danes",
         "yesterday": "včeraj",
         "from": "von",
+        "operation": "Operacija",
+        "classical": "classic",
+        "skating": "Drsanje",
+        "condition": "Stanje",
+        "trail_report": "Loipenbericht",
         "countries": {
             "Österreich": "Avstrija",
             "Deutschland": "Nemčija",
@@ -490,6 +580,11 @@ KEYWORDS = {
         "today": "ma",
         "yesterday": "tegnap",
         "from": "-tól",
+        "operation": "Üzem",
+        "classical": "klasszikus",
+        "skating": "Skating",
+        "condition": "Állapot",
+        "trail_report": "Sífutópálya jelentés",
         "countries": {
             "Österreich": "Ausztria",
             "Deutschland": "Németország",
@@ -518,6 +613,11 @@ KEYWORDS = {
         "today": "astăzi",
         "yesterday": "ieri",
         "from": "de la",
+        "operation": "Întreprindere/acţionare",
+        "classical": "clasic",
+        "skating": "Patinaj",
+        "condition": "Stare",
+        "trail_report": "Raport pârtii de schi de fond",
         "countries": {
             "Österreich": "Austria",
             "Deutschland": "Germania",
@@ -546,6 +646,11 @@ KEYWORDS = {
         "today": "сегодня",
         "yesterday": "вчера",
         "from": "с",
+        "operation": "Работа",
+        "classical": "классические",
+        "skating": "Катание",
+        "condition": "Состояние",
+        "trail_report": "Отчет по лыжне",
         "countries": {
             "Österreich": "Австрия",
             "Deutschland": "Германия",
