@@ -46,22 +46,22 @@
           "ski_area": "Ośrodek",
           "manual_path": "Ręczna ścieżka URL (np. serfaus-fiss-ladis)"
         }
-      },
-      "error": {
-        "cannot_connect": "Nie można się połączyć ze stroną Bergfex. Sprawdź swoje połączenie internetowe.",
-        "no_areas_found": "Nie można znaleźć żadnych ośrodków narciarskich dla wybranego kraju.",
-        "no_selection": "Wybierz ośrodek narciarski z listy lub podaj ręcznie ścieżkę URL."
-      },
-      "abort": {
-        "already_configured": "Ten ośrodek narciarski jest już skonfigurowany."
       }
     },
-    "selector": {
-      "report_type": {
-        "options": {
-          "alpine": "Ośrodek narciarstwa alpejskiego",
-          "cross_country": "Ośrodek narciarstwa biegowego"
-        }
+    "error": {
+      "cannot_connect": "Nie można się połączyć ze stroną Bergfex. Sprawdź swoje połączenie internetowe.",
+      "no_areas_found": "Nie można znaleźć żadnych ośrodków narciarskich dla wybranego kraju.",
+      "no_selection": "Wybierz ośrodek narciarski z listy lub podaj ręcznie ścieżkę URL."
+    },
+    "abort": {
+      "already_configured": "Ten ośrodek narciarski jest już skonfigurowany."
+    }
+  },
+  "selector": {
+    "report_type": {
+      "options": {
+        "alpine": "Ośrodek narciarstwa alpejskiego",
+        "cross_country": "Ośrodek narciarstwa biegowego"
       }
     }
   }
