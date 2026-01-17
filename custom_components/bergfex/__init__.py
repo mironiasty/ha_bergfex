@@ -234,9 +234,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     try: 
                         # copy parsed_data and remove keys that are not string
                         json_data = {k: v for k, v in parsed_data.items() if k not in ("last_update")} 
-                        if parsed_data["last_update"] is not None:
-                            json_data["last_update"] = parsed_data["last_update"].strftime("%c")
-                        json_data["data_sync_time"] = datetime.now().strftime("%c") 
                         async with session.post(webhook_url, 
                                                 json={"merge_variables": json_data}
                                                 ) as response:
