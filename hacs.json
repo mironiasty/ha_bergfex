@@ -1,6 +1,4 @@
 {
-  "name": "Bergfex Snow Report",
-  "render_readme": true,
-  "zip_release": true,
-  "filename": "bergfex.zip"
+  "name": "Bergfex Snow Report (TEST)",
+  "render_readme": true
 }
