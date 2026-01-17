@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta, datetime
+from datetime import timedelta
 from urllib.parse import urljoin
 
 from homeassistant.config_entries import ConfigEntry
